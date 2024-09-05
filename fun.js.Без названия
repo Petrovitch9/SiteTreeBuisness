@@ -1,0 +1,241 @@
+var HOST = 'agroserver.ru';
+
+var sel_win = false;
+var mobile = 0;
+
+
+if ($(window).width() < 1200) {
+	
+	mobile = 1;
+}
+
+
+$(document).ready(function(){
+	
+    $('.head_m_search_ico').on('click', function(){		
+		$('.head_m_search').css('display', 'block');
+		$('.head_m').css('display', 'none');
+		$('.head_m_search_input input').focus();
+    });		
+    $('.head_m_search_esc').on('click', function(){	
+		$('.head_m_search').css('display', 'none');
+		$('.head_m').css('display', 'flex');
+    });	
+	$('.head_m_search_ico2').on('click', function(){	
+		if($('.head_m_search_input input').val()){
+			$('.searchf_m').submit();
+		}	
+	});
+
+	$('#getsearch').click(function(){var text = $('#getsearch').text(); $('#search_text').attr('value', text);});
+ 	
+
+
+
+
+	if(!mobile){
+		$('.menu ul li').hover(
+			function(){$(this).addClass("active");$(this).find('ul').show();},
+			function(){$(this).removeClass("active");$(this).find('ul').hide();}
+		);	
+	}
+    $('.head_m_menu').on('click', function(){
+
+        if($('.menu').is(":visible")){
+        
+			$('.pre_menu').removeClass('menu_opener');  
+			$(this).removeClass("head_m_menu_closer");
+        }
+        else {
+            $('.pre_menu').addClass('menu_opener');  
+			$(this).addClass("head_m_menu_closer");
+        }
+    });	
+	
+	if(mobile){
+		$(window).bind('scroll', function () {
+			if ($(window).scrollTop() > 450 ) {				
+				$('.go_top_from_footer img').show();
+			} else {							
+				$('.go_top_from_footer img').hide();
+			}
+		});	
+	}
+	
+	$(".gotop").click(function() {
+		$("html, body").animate({ scrollTop: 0 }, 100);
+		return false;
+	});	
+	
+	$('.fastnav ul li a').hover(
+        function(){$(this).parent("li").addClass('hover');},
+		function(){$(this).parent("li").removeClass('hover');}
+	);
+
+	chCookie_login();
+
+	
+	$(document).on('click', '.personal_pop_menu_close', function(){
+			
+		sel_win.hide();
+			
+		sel_win = false;
+
+		$("#css_personal_menu").remove();
+	});	
+
+	$(document).on('click', '.personal_pop_menu_go', function(){
+
+		var clicker = $(this);
+		var cont = $(this).data('cont');
+		
+		if(mobile){
+
+			$('#'+cont).offset({top: 0, left : 0});
+
+			$('#'+cont).show();			
+				
+			var left_clicker = clicker.offset().left;
+			var top = clicker.offset().top + clicker.outerHeight() + 10;			
+			var clicker_w = clicker.width();
+			var window_w = $(window).width();
+			var cont_w = $('#'+cont).width();
+
+			var left_new = left_clicker + clicker_w/2 - cont_w/2;
+
+			if(left_new < 10) {
+				
+				left_new = 10;
+			}
+
+			if(left_new+cont_w > window_w){
+				
+				left_new = window_w - cont_w - 20;
+			}
+
+			var left_new_bebore = left_clicker - left_new + clicker_w/2;
+			
+			$('#'+cont).offset({top: top, left : left_new});
+
+			$("<style type='text/css' id='css_pop_menu' />").appendTo("head");
+			$("#css_pop_menu").text(".personal_pop_menu:before {left: "+ left_new_bebore +"px !important} ");
+
+			sel_win = $('#'+cont);
+
+		}
+		else {
+			var left = $(this).offset().left - $('#'+cont).outerWidth()/2 + $(this).outerWidth()/2;
+			var top = $(this).offset().top + $(this).outerHeight()*2 - $(this).outerHeight()/2 + 3;
+					
+			$('#'+cont).show();
+			$('#'+cont).offset({top: top, left: left});
+			
+			sel_win = $('#'+cont);	
+		}
+	});		
+
+	$('.go_fav_menu').on('click', function(){
+		
+		var id = $(this).data('id');
+		
+		$.ajax({
+				url: "/user-fav/add/",
+				type: "POST",
+				data: {'type': $(this).data('type'), 'id': id, 'del': $(this).data('del')},
+				async: true,
+				dataType: "json",
+				timeout: 5000,
+				success: function (data){
+					
+					if (data['add']) {
+						$('#go_fav_menu_' + id).text('Удалить из избранного');
+						$('#go_fav_menu_' + id).data('del', 1);
+					}
+					else {
+						$('#go_fav_menu_' + id).text('Добавить в избранное');
+						$('#go_fav_menu_' + id).data('del', 0);
+					}
+				},
+				error: function (){}});}
+	);	
+
+	$(".backward_ref").each(function( index ) {
+
+		if (location.host == HOST && document.referrer && location != document.referrer){
+			$(this).attr('href', document.referrer);
+		}
+		
+	});
+});
+
+
+function chCookie_login() {
+    var cookies = new Object();
+    var name_value_all = document.cookie.split(';');
+    for (var i = 0; i < name_value_all.length; i++) {
+        var name_value = name_value_all[i].split('=');
+		cookies[$.trim(name_value[0])] = name_value[1];
+    }	
+    if (!cookies['brjs']){
+		var ts= new Date().getTime();
+		document.cookie = "brjs="+ts+"; path=/";
+	}
+
+	$('input[name='+'sma'+'rtph'+'one'+']').val($(window).width());
+}
+
+function getCookie(name) {
+  var matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+function wm(top_url){
+	var u = '';
+	var r = encodeURI(document.referrer);
+	var u2 = encodeURI(document.URL);
+	if (top_url){
+		u = encodeURI(top_url);
+	}
+	document.createElement("img").src = "https://ct.web-monitoring.ru/?uid=1&url="+u+"&url2="+u2+"&ref="+r+"&rd="+Math.random();
+}
+
+function wm_stat(p){
+	var u = encodeURI(p);
+	var r = encodeURI(document.referrer);
+	document.createElement("img").src = 'https://stat.web-monitoring.ru/ct/?uid=1&url='+u+'&ref='+r+'&rd='+Math.random()+'';
+}
+
+function agro_top(top_url){
+	var r = encodeURI(document.referrer);
+	var u = encodeURI(document.URL);
+	if (top_url){
+		u = encodeURI(top_url);
+	}
+	document.write('<a href="/top/"><img src="https://top.agroserver.ru/ct/?uid=2&url='+u+'&ref='+r+'&rd='+Math.random()+'" width="88" height="31"></a>');
+}
+
+function clk(p){
+	var u = encodeURI('agroserver.ru/'+p+'');
+	var r = encodeURI(document.referrer);
+	document.createElement("img").src = 'https://stat.web-monitoring.ru/ct/?uid=1&url='+u+'&ref='+r+'&rd='+Math.random()+'';
+return true;}
+
+
+function back_nav(){
+	
+	if(mobile && $('.navm').html() != ''){
+
+		$('.navm').removeClass('hide');
+	} 
+	else {
+
+		$('.nav').removeClass('hide');
+	}			
+}
+
+function MailValid(emailAddress) {
+    var pattern = new RegExp(/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i);
+    return pattern.test(emailAddress);
+};

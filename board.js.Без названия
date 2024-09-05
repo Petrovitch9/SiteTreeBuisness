@@ -1,0 +1,264 @@
+function pic_load(){
+
+	$( ".list_full .wrapper .photo a" ).each(function() {
+
+		if($(this).data('src')){
+			$(this).css('background', 'url(https://userdata.agroserver.ru/pic/'+$(this).data('src')+'_200.jpg) center center no-repeat');
+			$(this).css('background-size', 'cover');
+		}
+		
+		if(!mobile){
+			var wh = $(this).data("wh");
+			if(wh){
+				var a = wh.split('x');
+				var r = a[0]/a[1];				
+				var h = $(this).width()/r;
+				if(h > $(this).width()*1.3){
+					h = $(this).width()*1.3;
+				}
+				$(this).height(h);
+			}
+		}
+	});		
+
+	$('.mimg a').css('background', 'url(https://userdata.agroserver.ru/pic/' +$('.mimg a').data('src')+ '_350.jpg) center center no-repeat');	
+
+	$('.mimg a').data('index', 0);
+
+	var count_pic = $('.pic_viewer_list .pic_viewer_go').length;
+
+	if(mobile){
+
+		$('.mobile_pic_viewer_to_right, .mimg a').on('click', function(){
+
+			if(!count_pic) {return}
+
+			var n = $('.mimg a').data('index') + 1;
+
+			if(n >= count_pic){n = 0;}
+
+			$('.mimg a').css('background', 'url(https://userdata.agroserver.ru/pic/'+ $('.pic_viewer_list .pic_viewer_go').eq(n).data('src') +'_350.jpg) center center no-repeat');
+
+			$('.mimg a').data('index', n);
+
+			$('.mobile_pic_viewer_pages').text(n+1+' / '+count_pic);
+		});
+
+		$('.mobile_pic_viewer_to_left').on('click', function(){
+
+			if(!count_pic) {return}
+
+			var n = $('.mimg a').data('index') - 1;
+
+			if(n < 0){n = count_pic-1;}
+
+			$('.mimg a').css('background', 'url(https://userdata.agroserver.ru/pic/'+ $('.pic_viewer_list .pic_viewer_go').eq(n).data('src') +'_350.jpg) center center no-repeat');
+
+			$('.mimg a').data('index', n);
+
+			$('.mobile_pic_viewer_pages').text(n+1+' / '+count_pic);
+		});	
+	}		
+}
+
+
+$(document).ready(function(){
+
+	pic_load();
+
+	$(document).mouseup(function (e) {
+		
+		if (sel_win){if (!sel_win.is(e.target) && sel_win.has(e.target).length === 0){
+			
+			sel_win.hide();			
+			sel_win = false;
+		}}
+	});
+
+	$(document).keyup(function(e){if(e.keyCode == 27){
+		$('#complaint').empty();
+		if(sel_win){sel_win.hide()};}
+	});
+	
+
+	if($('#phones_cont').data('id')){
+		
+		$.ajax({
+			url: "/b/ajax/get_contacts/" + $('#phones_cont').data('id') +'/1',
+			type: "POST",
+			data: {},
+			async: true,
+			timeout: 5000,
+			success: function (data){				
+				$('#phones_cont').prepend(data);
+			},
+			error: function (data){console.log(data);}});
+	}
+		
+
+    $(".lot_pics").each(function( index ) {
+		$(this).css('background', 'url(https://userdata.agroserver.ru/pic/'+$(this).data('pic')+'_200.jpg) center center no-repeat');
+		$(this).css('background-size', 'cover');
+    });	
+
+    $(".pic_viewer_list a").each(function( index ) {
+		$(this).css('background', 'url(https://userdata.agroserver.ru/pic/'+$(this).data('src')+'_100.jpg) center center no-repeat');
+		$(this).css('background-size', 'auto');
+    });	
+
+	if(!mobile){
+		$(".pic_viewer_go").on('click', function(){
+			$('.pic_viewer').show();
+			sel_win = $('.pic_viewer');
+
+			$('.pic_viewer_content').empty();
+
+			$('.pic_viewer_list_selected').removeClass('pic_viewer_list_selected');
+			$('.pic_viewer_list a[data-src="'+ $(this).data('src') +'"]').addClass('pic_viewer_list_selected');
+
+			$('<img/>',{src: 'https://userdata.agroserver.ru/pic/'+$(this).data('src')+'.jpg'}).appendTo('.pic_viewer_content');
+		});
+
+		$(".pic_viewer .close_win, .pic_viewer .dark_win").on('click', function(){
+			sel_win.hide();
+		});
+	}
+
+	$('#bcontext .for_clk a').on('mousedown', function(){clk('b/b.clk.searchcontext')});
+	$('#bcontext .more a').on('mousedown', function(){clk('b/b.clk.searchcontext_full')});
+	$('.b_sub_nav a').on('mousedown', function(){clk('b.clk.subnav')});
+	$('.board_lots a').on('mousedown', function(){clk('b.clk.lots')});
+	$('.list_full .tovar_top a').on('mousedown', function(){clk('b.clk.boards')});	
+	
+	if (typeof(h) != "undefined"){
+		
+		var ref = document.referrer;
+		var ref = ref.replace('&ref=', '&ref2=');
+		
+		if(h['brub']){			
+			
+			$('#subgeo').load('/b/ajax/get_geo_sub/'+h['brub']+'/?'+Math.random(), function(){if($('#subgeo').text()){$('#subgeo').show()}});
+			
+			if(typeof(h['bid']) == "undefined"){document.createElement("img").src = '/b/stat/?rub='+h['brub']+'&ref='+encodeURI(ref)+'&rd='+Math.random();}
+		}
+		
+		if(h['bid']){
+			
+			$('#bcontext').load('/search/bcontext/?'+Math.random()+'&id='+h['bid']+'&rub='+h['brub']+'&ref='+encodeURI(ref),function(){if($('#bcontext').html()){}});
+			
+			if (document.URL.indexOf('direct=1') + 1){ref = '';}
+			
+			document.createElement("img").src = '/b/statb/?id='+h['bid']+'&rub='+h['brub']+'&bold='+h['bold']+'&ref='+encodeURI(ref)+'&rd='+Math.random();
+		}
+		
+		if(h['fid']){
+			
+			if (document.URL.indexOf('direct=1') + 1){ref = '';}
+			
+			document.createElement("img").src = '/b/statf/?fid='+h['fid']+'&ref='+encodeURI(ref)+'&rd='+Math.random();
+		}
+	}
+	
+	/* Fav */
+	
+	$('#go_fav').on('click', function(){
+		
+		$.ajax({
+				url: "/user-fav/add/",
+				type: "POST",
+				data: {'type': $(this).data('type'), 'id': $(this).data('id'), 'del': $(this).data('del')},
+				async: true,
+				dataType: "json",
+				timeout: 5000,
+				success: function (data){
+					
+					if (data['add']) {
+						$('#go_fav').text('Удалить из избранного');
+						$('#go_fav').data('del', 1);
+						$('.fav0').addClass("fav1");
+						$('.fav0').removeClass("fav0");
+					}
+					else {
+						$('#go_fav').text('Добавить в избранное');
+						$('#go_fav').data('del', 0);
+						$('.fav1').addClass("fav0");
+						$('.fav0').removeClass("fav1");						
+					}
+				},
+				error: function (){}});});	
+	
+	
+	
+	
+	/* Complaint */
+	
+	$('#show_complaint').on('click', function(){
+
+		$('#complaint').load('/b/ajax/complaint/'+h['bid']+'/?'+Math.random());
+
+	});
+	
+	$(document).on('click', '.board_complaint_win_close', function(){
+
+		$('#complaint').empty();
+
+	});
+	
+	$(document).on('click', '.board_complaint button', function(){
+	
+		$('.forma .forma_required_wrong').removeClass('forma_required_wrong');
+
+		var mess = [];
+
+
+		$('.forma .forma_required').each(function(){
+			
+			if(!$(this).val()){
+				mess.push("не заполнено поле <span>«"+$(this).data('name')+"»</span>");
+				$(this).parent().addClass('forma_required_wrong');
+			}
+			if($(this).data('role') == 'mail' && $(this).val() && !MailValid($(this).val())){
+				mess.push('неверный формат E-mail адреса');
+				$(this).parent().addClass('forma_required_wrong');
+			}
+		});
+
+		if(mess.length > 0) {			
+
+			$('.forma_wrong_mess').empty();
+
+			$('<p/>',{text: 'СООБЩЕНИЕ НЕ ОТПРАВЛЕНО!',}).appendTo('.forma_wrong_mess');
+			$('<ul/>',{class: 'forma_wrong_mess_list',}).appendTo('.forma_wrong_mess');
+			
+			$.each(mess, function(index, item) {
+
+				$('<li/>',{html: item,}).appendTo('.forma_wrong_mess ul');				
+			});
+		}		
+		else {		
+
+			var param = {};
+
+			$(".board_complaint :input").each(function(){
+				if($(this).attr('name')){					
+					param[$(this).attr('name')]= $(this).val();
+				}
+			});
+						
+			$.post('/b/ajax/complaint/'+h['bid']+'/?'+Math.random(), param, function(){
+				$('.board_complaint_done').show();
+				$('.board_complaint .forma').hide();				
+				setTimeout(function(){$('#complaint').empty()},1000);
+
+			}).fail(function() {
+			
+				$('.board_complaint_error').show();
+			});
+									
+			
+		}
+	});	
+
+});
+
+
